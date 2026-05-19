@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#10B981">
     <title>{{ ($title ?? '') ? $title . ' — SIPLAS' : config('app.name') }}</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310B981'%3E%3Cpath d='M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z'/%3E%3C/svg%3E">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='14' fill='%23047857'/%3E%3Cpath d='M 26 38 C 23 33, 25 26, 32 23 C 39 27, 41 33, 38 38 C 35 41, 29 41, 26 38 Z' fill='%23A7F3D0'/%3E%3C/svg%3E">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-app text-slate-900 font-sans antialiased"
@@ -13,15 +14,15 @@
 
     {{-- Mobile sidebar backdrop --}}
     <div x-show="sidebar" x-cloak @click="sidebar = false"
-         x-transition.opacity
+         x-transition.opacity.duration.200ms
          class="lg:hidden fixed inset-0 z-30 bg-slate-900/50 backdrop-blur-sm"></div>
 
     {{-- Sidebar --}}
     <aside :class="sidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
            class="fixed top-0 left-0 z-40 w-64 h-screen bg-white border-r border-slate-200 transition-transform duration-200 flex flex-col">
-        <div class="h-16 px-5 flex items-center border-b border-slate-100">
-            <a href="@if(auth()->user()?->isAdmin()) {{ route('admin.dashboard') }} @else {{ route('petugas.dashboard') }} @endif">
-                <x-application-logo />
+        <div class="h-16 sm:h-[68px] px-5 flex items-center border-b border-slate-100">
+            <a href="@if(auth()->user()?->isAdmin()){{ route('admin.dashboard') }}@else{{ route('petugas.dashboard') }}@endif" class="transition-transform hover:scale-[1.02]">
+                <x-application-logo :size="40" />
             </a>
         </div>
 
@@ -97,9 +98,9 @@
             @endif
         </nav>
 
-        <div class="px-3 py-3 border-t border-slate-100">
+        <div class="px-3 py-3 border-t border-slate-100 bg-gradient-to-b from-white to-slate-50">
             <div class="flex items-center gap-3 px-2">
-                <x-avatar :user="auth()->user()" size="sm" />
+                <x-avatar :user="auth()->user()" size="sm" :ring="true" />
                 <div class="min-w-0 flex-1">
                     <p class="text-sm font-semibold text-slate-900 truncate">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-slate-500 truncate">{{ auth()->user()->role_label }}</p>
@@ -110,8 +111,8 @@
 
     {{-- Topbar --}}
     <header class="lg:pl-64 sticky top-0 z-20 bg-white/85 backdrop-blur-md border-b border-slate-200/70">
-        <div class="h-16 px-4 sm:px-6 flex items-center gap-3">
-            <button @click="sidebar = true" class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-slate-600 hover:bg-slate-100" aria-label="Buka menu">
+        <div class="h-16 sm:h-[68px] px-4 sm:px-6 flex items-center gap-3">
+            <button @click="sidebar = true" class="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg text-slate-600 hover:bg-slate-100 transition" aria-label="Buka menu">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
 
@@ -129,16 +130,7 @@
     </header>
 
     {{-- Main --}}
-    <main class="lg:pl-64">
-        @if(session('success') || session('error') || session('warning') || session('info'))
-            <div class="px-4 sm:px-6 pt-4 space-y-2">
-                @if(session('success')) <x-alert variant="success">{{ session('success') }}</x-alert> @endif
-                @if(session('error'))   <x-alert variant="danger">{{ session('error') }}</x-alert> @endif
-                @if(session('warning')) <x-alert variant="warning">{{ session('warning') }}</x-alert> @endif
-                @if(session('info'))    <x-alert variant="info">{{ session('info') }}</x-alert> @endif
-            </div>
-        @endif
-
+    <main class="lg:pl-64 animate-fade-in">
         <div class="px-4 sm:px-6 py-6">
             @isset($header)
                 <div class="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
@@ -157,5 +149,8 @@
             {{ $slot }}
         </div>
     </main>
+
+    <x-toast-host />
+    <x-scroll-top />
 </body>
 </html>

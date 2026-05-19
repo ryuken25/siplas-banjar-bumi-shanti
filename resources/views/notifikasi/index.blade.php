@@ -16,7 +16,7 @@
 
     @if($notifications->isEmpty())
         <x-card>
-            <x-empty-state title="Belum ada notifikasi" description="Pemberitahuan dari sistem akan muncul di sini." />
+            <x-empty-state title="Belum ada notifikasi" description="Pemberitahuan dari sistem akan muncul di sini." illustration="notif" />
         </x-card>
     @else
         <x-card class="!p-0">

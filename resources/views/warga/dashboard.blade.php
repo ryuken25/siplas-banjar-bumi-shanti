@@ -86,7 +86,7 @@
         </div>
         @if($laporanTerbaru->isEmpty())
             <x-card>
-                <x-empty-state title="Belum ada laporan" description="Mulai dengan membuat laporan pertama Anda.">
+                <x-empty-state title="Belum ada laporan" description="Mulai dengan membuat laporan pertama Anda." illustration="laporan">
                     <x-slot:action>
                         <x-button :href="route('warga.lapor.create')">Buat Laporan</x-button>
                     </x-slot:action>

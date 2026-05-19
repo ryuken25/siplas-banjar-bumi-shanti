@@ -11,7 +11,7 @@
 
     @if($laporan->isEmpty())
         <x-card>
-            <x-empty-state title="Belum ada laporan dengan filter ini" description="Coba ubah filter atau buat laporan baru.">
+            <x-empty-state title="Belum ada laporan dengan filter ini" description="Coba ubah filter atau buat laporan baru." illustration="laporan">
                 <x-slot:action>
                     <x-button :href="route('warga.lapor.create')">Buat Laporan</x-button>
                 </x-slot:action>

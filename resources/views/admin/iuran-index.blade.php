@@ -22,7 +22,7 @@
     </x-card>
 
     @if($iuran->isEmpty())
-        <x-card><x-empty-state title="Belum ada iuran pada periode ini" /></x-card>
+        <x-card><x-empty-state title="Belum ada iuran pada periode ini" description="Coba ubah filter periode atau status." illustration="iuran" /></x-card>
     @else
         <x-card class="!p-0">
             <x-table>

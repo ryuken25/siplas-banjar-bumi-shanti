@@ -4,7 +4,7 @@
 
     @if($iuran->isEmpty())
         <x-card>
-            <x-empty-state title="Tidak ada pembayaran menunggu verifikasi" description="Semua pembayaran sudah diproses." />
+            <x-empty-state title="Tidak ada pembayaran menunggu verifikasi" description="Semua pembayaran sudah diproses." illustration="iuran" />
         </x-card>
     @else
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -18,7 +18,7 @@
         <div x-show="tab === 'aktif'" x-transition>
             @if($aktif->isEmpty())
                 <x-card>
-                    <x-empty-state title="Tidak ada tagihan aktif" description="Semua tagihan Anda telah lunas. Terima kasih atas dukungannya!" />
+                    <x-empty-state title="Tidak ada tagihan aktif" description="Semua tagihan Anda telah lunas. Terima kasih atas dukungannya!" illustration="iuran" />
                 </x-card>
             @else
                 <div class="grid sm:grid-cols-2 gap-4">
@@ -117,7 +117,7 @@
         <div x-show="tab === 'riwayat'" x-cloak x-transition>
             @if($riwayat->isEmpty())
                 <x-card>
-                    <x-empty-state title="Belum ada riwayat pembayaran" description="Pembayaran yang sudah lunas akan ditampilkan di sini." />
+                    <x-empty-state title="Belum ada riwayat pembayaran" description="Pembayaran yang sudah lunas akan ditampilkan di sini." illustration="iuran" />
                 </x-card>
             @else
                 <x-card class="!p-0">

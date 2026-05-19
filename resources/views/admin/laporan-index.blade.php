@@ -19,7 +19,7 @@
     </x-card>
 
     @if($laporan->isEmpty())
-        <x-card><x-empty-state title="Tidak ada laporan ditemukan" /></x-card>
+        <x-card><x-empty-state title="Tidak ada laporan ditemukan" description="Coba ubah filter pencarian." illustration="laporan" /></x-card>
     @else
         <x-card class="!p-0">
             <x-table>
