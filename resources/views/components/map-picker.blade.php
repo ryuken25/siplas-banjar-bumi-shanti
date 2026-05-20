@@ -42,18 +42,39 @@
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                 <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
             </span>
-            <input type="text" x-model="query" @keydown.enter.prevent="search()" @input.debounce.600ms="search()"
-                   placeholder="Cari nama jalan / tempat (mis. Gang Mawar Denpasar)..."
-                   class="block w-full rounded-lg border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm pl-10 pr-3 py-2.5 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30">
+            <input type="text" x-model="query" @keydown.enter.prevent="search()" @input.debounce.350ms="search()"
+                   @focus="query.length >= 2 && search()"
+                   placeholder="Cari jalan / tempat (mis. Gang Mawar, Pura Dalem)..."
+                   class="block w-full rounded-lg border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 text-sm pl-10 pr-9 py-2.5 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/30">
+
+            {{-- Searching spinner / clear --}}
+            <span class="absolute right-3 top-1/2 -translate-y-1/2">
+                <svg x-show="searching" x-cloak class="w-4 h-4 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <circle class="opacity-25" cx="12" cy="12" r="10"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <button type="button" x-show="!searching && query.length > 0" x-cloak @click="query=''; results=[]"
+                        class="text-slate-400 hover:text-slate-600" aria-label="Bersihkan">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </span>
 
             {{-- Search results dropdown --}}
-            <div x-show="results.length > 0" x-cloak @click.outside="results = []"
-                 class="absolute z-[1000] mt-1 w-full bg-white rounded-lg border border-slate-200 shadow-xl overflow-hidden max-h-60 overflow-y-auto scrollbar-thin">
-                <template x-for="r in results" :key="r.place_id">
+            <div x-show="results.length > 0 || (searched && query.length >= 2)" x-cloak @click.outside="results = []; searched = false"
+                 class="absolute z-[1000] mt-1 w-full bg-white rounded-lg border border-slate-200 shadow-xl overflow-hidden max-h-72 overflow-y-auto scrollbar-thin">
+                <template x-if="results.length === 0 && searched">
+                    <div class="px-3 py-4 text-sm text-slate-400 text-center">Tempat tidak ditemukan. Coba kata kunci lain atau ketuk peta langsung.</div>
+                </template>
+                <template x-for="(r, idx) in results" :key="idx">
                     <button type="button" @click="pickResult(r)"
-                            class="w-full text-left px-3 py-2 text-sm hover:bg-primary-50 border-b border-slate-50 last:border-0 flex gap-2 items-start">
-                        <svg class="w-4 h-4 text-primary-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span class="text-slate-700 line-clamp-2" x-text="r.display_name"></span>
+                            class="w-full text-left px-3 py-2.5 hover:bg-primary-50 border-b border-slate-50 last:border-0 flex gap-2.5 items-start transition">
+                        <span class="shrink-0 mt-0.5 w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </span>
+                        <span class="min-w-0">
+                            <span class="block text-sm font-medium text-slate-900 truncate" x-text="r.primary"></span>
+                            <span class="block text-xs text-slate-500 truncate" x-text="r.secondary"></span>
+                        </span>
                     </button>
                 </template>
             </div>
@@ -171,6 +192,9 @@
                 lng: cfg.initLng,
                 query: '',
                 results: [],
+                searching: false,
+                searched: false,
+                searchSeq: 0,
                 resolvedAddress: '',
 
                 async init() {
@@ -285,26 +309,61 @@
                     );
                 },
 
+                // Build a "Primary — secondary" label from a Photon feature.
+                formatFeature(f) {
+                    const p = f.properties || {};
+                    const coords = f.geometry?.coordinates || [];
+                    const primary = p.name
+                        || [p.street, p.housenumber].filter(Boolean).join(' ')
+                        || p.city || p.district || 'Lokasi';
+                    const parts = [];
+                    if (p.street && p.street !== primary) parts.push(p.housenumber ? `${p.street} ${p.housenumber}` : p.street);
+                    if (p.district && p.district !== primary) parts.push(p.district);
+                    if (p.city && p.city !== primary) parts.push(p.city);
+                    if (p.county && !parts.includes(p.county) && p.county !== p.city) parts.push(p.county);
+                    if (p.state) parts.push(p.state);
+                    return {
+                        primary,
+                        secondary: parts.join(', ') || (p.country || 'Indonesia'),
+                        lat: coords[1],
+                        lng: coords[0],
+                    };
+                },
+
                 async search() {
                     const q = this.query.trim();
-                    if (q.length < 3) { this.results = []; return; }
+                    this.results = [];
+                    if (q.length < 2) { this.searched = false; this.searching = false; return; }
+
+                    // Bias results around the current map view (fallback: Bali centre).
+                    const c = this.map ? this.map.getCenter() : { lat: cfg.defaultLat, lng: cfg.defaultLng };
+                    const seq = ++this.searchSeq;
+                    this.searching = true;
                     try {
-                        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&accept-language=id&q=${encodeURIComponent(q)}`;
+                        // Photon — OSM geocoder built for type-ahead. Free, no API key.
+                        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}`
+                            + `&lat=${c.lat}&lon=${c.lng}&limit=8&lang=default`;
                         const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
                         if (!res.ok) throw new Error();
-                        this.results = await res.json();
+                        const data = await res.json();
+                        if (seq !== this.searchSeq) return; // a newer query already fired
+                        this.results = (data.features || [])
+                            .map(f => this.formatFeature(f))
+                            .filter(r => r.lat != null && r.lng != null);
                     } catch (e) {
-                        this.results = [];
+                        if (seq === this.searchSeq) this.results = [];
+                    } finally {
+                        if (seq === this.searchSeq) { this.searching = false; this.searched = true; }
                     }
                 },
 
                 pickResult(r) {
-                    const lat = parseFloat(r.lat), lng = parseFloat(r.lon);
                     this.results = [];
-                    this.query = '';
-                    this.map.flyTo([lat, lng], 18, { duration: 1 });
-                    this.setPin(lat, lng, false);
-                    this.resolvedAddress = r.display_name;
+                    this.searched = false;
+                    this.query = r.primary;
+                    this.map.flyTo([r.lat, r.lng], 18, { duration: 1 });
+                    this.setPin(r.lat, r.lng, false);
+                    this.resolvedAddress = [r.primary, r.secondary].filter(Boolean).join(', ');
                 },
 
                 async reverseGeocode(lat, lng) {
