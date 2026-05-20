@@ -1,5 +1,5 @@
 <x-layouts.warga :title="'Beranda'">
-    <x-slot:header>Selamat datang, {{ explode(' ', auth()->user()->name)[0] }} 👋</x-slot:header>
+    <x-slot:header>Selamat datang, {{ implode(' ', array_slice(explode(' ', auth()->user()->name), 0, 2)) }} 👋</x-slot:header>
     <x-slot:subheader>Lihat ringkasan aktivitas Anda di SIPLAS Banjar Bumi Shanti.</x-slot:subheader>
 
     {{-- Stat cards --}}
