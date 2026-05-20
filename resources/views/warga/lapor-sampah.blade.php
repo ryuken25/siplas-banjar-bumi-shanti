@@ -1,6 +1,6 @@
 <x-layouts.warga :title="'Lapor Sampah'">
     <x-slot:header>Buat Laporan Sampah</x-slot:header>
-    <x-slot:subheader>Sertakan foto dan keterangan lokasi agar petugas dapat menanggapi lebih cepat.</x-slot:subheader>
+    <x-slot:subheader>Sertakan foto dan titik lokasi agar petugas dapat menanggapi lebih cepat.</x-slot:subheader>
 
     <div class="grid lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2">
@@ -17,36 +17,22 @@
                             'campuran' => '🗑️ Campuran',
                         ]" :value="old('jenis_sampah')" />
 
-                    <div x-data="{
-                            geo: false,
-                            getLocation() {
-                                if (!navigator.geolocation) { alert('Geolocation tidak didukung browser ini.'); return; }
-                                this.geo = true;
-                                navigator.geolocation.getCurrentPosition(
-                                    p => {
-                                        document.getElementById('latitude').value = p.coords.latitude.toFixed(7);
-                                        document.getElementById('longitude').value = p.coords.longitude.toFixed(7);
-                                        this.geo = false;
-                                    },
-                                    e => { alert('Gagal mengambil lokasi: ' + e.message); this.geo = false; },
-                                    { enableHighAccuracy: true, timeout: 10000 }
-                                );
-                            }
-                         }">
-                        <x-textarea label="Lokasi Lengkap" name="lokasi_text" required rows="2"
-                            placeholder="Contoh: Gang Mawar No. 12, depan pos kamling"
-                            :value="old('lokasi_text')" />
-                        <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
-                        <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
-                        <div class="mt-2">
-                            <x-button type="button" variant="secondary" size="sm" @click="getLocation()" x-bind:loading="geo">
-                                📍 Gunakan Lokasi Saya Sekarang
-                            </x-button>
-                            <span class="ml-2 text-xs text-slate-500" x-text="document.getElementById('latitude').value ? 'Koordinat tersimpan ✓' : ''"></span>
-                        </div>
-                    </div>
+                    {{-- Interactive map location picker (Leaflet + OpenStreetMap) --}}
+                    <x-map-picker
+                        latName="latitude"
+                        lngName="longitude"
+                        :lat="old('latitude')"
+                        :lng="old('longitude')"
+                        addressTarget="lokasi_text"
+                        label="Titik Lokasi Sampah"
+                        helper="Ketuk peta untuk menandai, atau gunakan tombol Lokasi Saya." />
 
-                    <x-textarea label="Keterangan" name="keterangan" required rows="4"
+                    <x-textarea label="Keterangan Lokasi" name="lokasi_text" id="lokasi_text" required rows="2"
+                        placeholder="Contoh: Gang Mawar No. 12, depan pos kamling"
+                        helper="Tuliskan patokan/alamat agar petugas mudah menemukan lokasi."
+                        :value="old('lokasi_text')" />
+
+                    <x-textarea label="Keterangan Kondisi" name="keterangan" required rows="4"
                         placeholder="Jelaskan kondisi sampah: kapan menumpuk, perkiraan volume, dampak yang terjadi, dll. (minimal 10 karakter)"
                         :value="old('keterangan')" />
 
@@ -67,10 +53,10 @@
             <x-card class="bg-gradient-to-br from-primary-50 to-white !border-primary-100">
                 <h3 class="font-display font-semibold text-slate-900">Tips Pelaporan</h3>
                 <ul class="mt-3 space-y-2.5 text-sm text-slate-600">
+                    <li class="flex gap-2"><span class="text-primary-600 shrink-0">✓</span> Ketuk peta tepat di titik tumpukan sampah.</li>
+                    <li class="flex gap-2"><span class="text-primary-600 shrink-0">✓</span> Gunakan "Lokasi Saya" bila Anda sedang di lokasi.</li>
+                    <li class="flex gap-2"><span class="text-primary-600 shrink-0">✓</span> Geser pin untuk memperbaiki posisi bila kurang tepat.</li>
                     <li class="flex gap-2"><span class="text-primary-600 shrink-0">✓</span> Pastikan foto terang & jelas.</li>
-                    <li class="flex gap-2"><span class="text-primary-600 shrink-0">✓</span> Sebutkan patokan/lokasi spesifik.</li>
-                    <li class="flex gap-2"><span class="text-primary-600 shrink-0">✓</span> Pilih jenis sampah yang sesuai agar penanganan tepat.</li>
-                    <li class="flex gap-2"><span class="text-primary-600 shrink-0">✓</span> Aktifkan "Gunakan Lokasi" untuk akurasi koordinat.</li>
                 </ul>
             </x-card>
 

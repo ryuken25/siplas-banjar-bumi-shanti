@@ -28,8 +28,16 @@
                     </div>
                     @if($laporan->latitude && $laporan->longitude)
                         <div class="sm:col-span-2">
-                            <dt class="text-slate-500">Koordinat</dt>
-                            <dd class="font-mono text-xs text-slate-700 mt-0.5">{{ $laporan->latitude }}, {{ $laporan->longitude }}</dd>
+                            <dt class="text-slate-500">Titik Lokasi</dt>
+                            <dd class="mt-1">
+                                <span class="font-mono text-xs text-slate-500">{{ number_format($laporan->latitude, 6) }}, {{ number_format($laporan->longitude, 6) }}</span>
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ $laporan->latitude }},{{ $laporan->longitude }}"
+                                   target="_blank" rel="noopener"
+                                   class="ml-2 inline-flex items-center gap-1 text-xs font-semibold text-primary-700 hover:text-primary-800">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    Cek di Google Maps
+                                </a>
+                            </dd>
                         </div>
                     @endif
                     <div class="sm:col-span-2">

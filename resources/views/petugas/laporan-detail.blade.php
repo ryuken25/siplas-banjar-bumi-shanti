@@ -58,8 +58,25 @@
 
             @if($laporan->latitude && $laporan->longitude)
                 <x-card>
-                    <h3 class="font-display font-semibold text-slate-900 mb-3">Lokasi di Peta</h3>
-                    <div id="map" class="w-full h-72 rounded-lg overflow-hidden"></div>
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <h3 class="font-display font-semibold text-slate-900">Lokasi di Peta</h3>
+                        <span class="text-xs font-mono text-slate-400">{{ number_format($laporan->latitude, 6) }}, {{ number_format($laporan->longitude, 6) }}</span>
+                    </div>
+                    <div id="map" class="w-full h-72 rounded-lg overflow-hidden z-0"></div>
+                    <div class="mt-3 flex flex-col sm:flex-row gap-2">
+                        <x-button
+                            :href="'https://www.google.com/maps/search/?api=1&query=' . $laporan->latitude . ',' . $laporan->longitude"
+                            target="_blank" rel="noopener" variant="secondary" size="sm" fullWidth
+                            :icon="'<svg fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z\'/><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M15 11a3 3 0 11-6 0 3 3 0 016 0z\'/></svg>'">
+                            Cek di Google Maps
+                        </x-button>
+                        <x-button
+                            :href="'https://www.google.com/maps/dir/?api=1&destination=' . $laporan->latitude . ',' . $laporan->longitude"
+                            target="_blank" rel="noopener" variant="primary" size="sm" fullWidth
+                            :icon="'<svg fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7\'/></svg>'">
+                            Petunjuk Arah
+                        </x-button>
+                    </div>
                 </x-card>
             @endif
         </div>
