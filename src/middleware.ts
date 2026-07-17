@@ -27,7 +27,6 @@ export async function middleware(request: NextRequest) {
     try {
       session = await unsealData(cookie.value, {
         password: process.env.SESSION_SECRET || 'complex-password-at-least-32-characters-long',
-        cookieName: 'siplas-session',
       });
     } catch {}
   }

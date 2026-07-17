@@ -5,7 +5,7 @@ import { sql } from '@/lib/db';
 export async function GET(request: Request) {
   try {
     const session = await getSession();
-    if (!session || session.role !== 'petugas') {
+    if (!session || session.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -15,7 +15,6 @@ export async function GET(request: Request) {
     const search = searchParams.get('search');
     const from = searchParams.get('from');
     const to = searchParams.get('to');
-    const sort = searchParams.get('sort') || 'desc';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
     const offset = (page - 1) * limit;
@@ -24,30 +23,16 @@ export async function GET(request: Request) {
     let params: any[] = [];
     let paramIdx = 1;
 
-    if (status) {
-      conditions.push(`ls.status = $${paramIdx++}`);
-      params.push(status);
-    }
-    if (jenis) {
-      conditions.push(`ls.jenis_sampah = $${paramIdx++}`);
-      params.push(jenis);
-    }
+    if (status) { conditions.push(`ls.status = $${paramIdx++}`); params.push(status); }
+    if (jenis) { conditions.push(`ls.jenis_sampah = $${paramIdx++}`); params.push(jenis); }
     if (search) {
       conditions.push(`(ls.kode_laporan ILIKE $${paramIdx} OR ls.lokasi_text ILIKE $${paramIdx} OR u.name ILIKE $${paramIdx})`);
-      params.push(`%${search}%`);
-      paramIdx++;
+      params.push(`%${search}%`); paramIdx++;
     }
-    if (from) {
-      conditions.push(`ls.created_at >= $${paramIdx++}`);
-      params.push(from);
-    }
-    if (to) {
-      conditions.push(`ls.created_at <= $${paramIdx++}`);
-      params.push(to + 'T23:59:59');
-    }
+    if (from) { conditions.push(`ls.created_at >= $${paramIdx++}`); params.push(from); }
+    if (to) { conditions.push(`ls.created_at <= $${paramIdx++}`); params.push(to + 'T23:59:59'); }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-    const sortDir = sort === 'asc' ? 'ASC' : 'DESC';
 
     const countQuery = `SELECT COUNT(*)::int as total FROM laporan_sampah ls JOIN users u ON ls.user_id = u.id ${whereClause}`;
     const dataQuery = `
@@ -56,10 +41,9 @@ export async function GET(request: Request) {
       JOIN users u ON ls.user_id = u.id
       LEFT JOIN users p ON ls.petugas_id = p.id
       ${whereClause}
-      ORDER BY ls.created_at ${sortDir}
+      ORDER BY ls.created_at DESC
       LIMIT $${paramIdx++} OFFSET $${paramIdx++}
     `;
-
     params.push(limit, offset);
 
     const [countResult, data] = await Promise.all([
@@ -67,19 +51,16 @@ export async function GET(request: Request) {
       sql(dataQuery, params),
     ]);
 
-    const total = countResult[0]?.total || 0;
-
     return NextResponse.json({
       data,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        page, limit,
+        total: countResult[0]?.total || 0,
+        totalPages: Math.ceil((countResult[0]?.total || 0) / limit),
       },
     });
   } catch (error) {
-    console.error('Petugas laporan list error:', error);
+    console.error('Admin laporan list error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

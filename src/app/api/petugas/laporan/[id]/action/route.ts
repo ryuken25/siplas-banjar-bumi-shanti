@@ -84,7 +84,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
     values.push(id);
 
-    await sql.query(
+    await sql(
       `UPDATE laporan_sampah SET ${setClauses.join(', ')} WHERE id = $${idx}`,
       values
     );
